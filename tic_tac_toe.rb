@@ -1,3 +1,5 @@
+require 'colored'
+
 module TicTacToe
   class Player 
     attr_accessor :symbol
@@ -84,21 +86,21 @@ module TicTacToe
 
     def move(player)
       while !winning_scenarios && !tie
-        puts "Where would you like to move 'player #{player.symbol}'?"
+        puts "Where would you like to move 'player #{player.symbol}'?".red
         choice = gets.chomp.to_i
         check_space(choice, player.symbol)
-        puts "Player #{player.symbol}'s move:"
+        puts "Player #{player.symbol}'s move:".green
         puts self
         turn
       end
     end
 
     def tie_message
-      puts "It's a Draw!" if tie
+      puts "It's a Draw!".cyan if tie
     end
 
     def win_message
-      puts "Game over!" if winning_scenarios
+      puts "Game over!".cyan if winning_scenarios
     end
 
     def turn
@@ -106,12 +108,12 @@ module TicTacToe
     end
 
     def play_again
-      puts "Play again? (yes or no)"
+      puts "Play again? (yes or no)".yellow
       answer = gets.chomp.downcase
       if answer == "yes"
         TicTacToe::Game.new
       else
-        puts "Goodbye"
+        puts "Goodbye".cyan.bold
       end
     end
 
