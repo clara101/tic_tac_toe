@@ -57,7 +57,6 @@ module TicTacToe
   end
 
   class Game 
-    attr_reader :spaces
     def initialize
       @board = Board.new
     end
