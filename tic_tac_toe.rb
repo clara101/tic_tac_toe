@@ -3,16 +3,13 @@ require 'colored'
 module TicTacToe
   class Player 
     attr_accessor :symbol
-
     def initialize(symbol)
       @symbol = symbol
     end
-
   end
 
   class Board 
     attr_reader :spaces
-
     def initialize
       @spaces = Array.new(9)
     end
@@ -20,7 +17,7 @@ module TicTacToe
     def to_s
       output = ""
       0.upto(8) do |position|
-        output << "#{spaces[position] || position}"
+        output << "#{@spaces[position] || position}"
         case position % 3 
         when 0, 1 then output << " | "
         when 2 then output << "\n-----------\n" unless position == 8
@@ -29,96 +26,96 @@ module TicTacToe
       output
     end
 
-    def check_space(cell, sym)
-      if spaces[cell].nil?
-        place_symbol(cell, sym)
-        @current_turn += 1
-      else
-        puts "Space unavailable! Please select another cell"
-      end
+    def space_free?(position)
+      @spaces[position].nil?
     end
 
     def place_symbol(cell, sym)
-      spaces[cell] = sym
+      @spaces[cell] = sym
     end
+
+    def winner
+      WINNING_COMBOS.any? do |set|
+        symbols = set.map {|position| @spaces[position]}
+        if symbols[0] == symbols[1] && symbols[1] == symbols[2]
+          symbols[0] unless symbols[0].nil?
+        end
+      end
+    end
+
+    def tie?
+      return !@spaces.include?(nil) && !winner
+    end
+
+    private
 
     WINNING_COMBOS = [
       [0, 1, 2], [3, 4, 5], [6, 7, 8],
       [0, 3, 6], [1, 4, 7], [2, 5, 8],
       [0, 4, 8], [2, 4, 6]
     ]
-
-    def winning_scenarios
-      WINNING_COMBOS.each do |set|
-        if spaces[set[0]] == spaces[set[1]] && spaces[set[1]] == spaces[set[2]]
-          return true unless spaces[set[0]].nil?
-        end
-      end
-      false
-    end
-
-    def tie
-      if !spaces.include?(nil) && !winning_scenarios
-        return true
-      end
-    end
-
   end
 
-  class Game < Board
-    attr_reader :player1, :player2, :symbol
-
+  class Game 
+    attr_reader :spaces
     def initialize
-      super
-      play_game
+      @board = Board.new
     end
 
     def play_game
       @player1 = Player.new("X")
       @player2 = Player.new("O")
-      puts Board.new
+      puts @board
       @current_turn = 1
-      turn
-      win_message
-      tie_message
-      play_again
+      while !@board.winner && !@board.tie?
+        move(current_player)
+        puts @board
+      end
+      print_game_result
     end
+
+    private
 
     def move(player)
-      while !winning_scenarios && !tie
-        puts "Where would you like to move 'player #{player.symbol}'?".red
-        choice = gets.chomp.to_i
-        check_space(choice, player.symbol)
-        puts "Player #{player.symbol}'s move:".green
-        puts self
-        turn
-      end
-    end
-
-    def tie_message
-      puts "It's a Draw!".cyan if tie
-    end
-
-    def win_message
-      puts "Game over!".cyan if winning_scenarios
-    end
-
-    def turn
-      @current_turn.even? ? move(@player2) : move(@player1)
-    end
-
-    def play_again
-      puts "Play again? (yes or no)".yellow
-      answer = gets.chomp.downcase
-      if answer == "yes"
-        TicTacToe::Game.new
+      puts "Where would you like to move 'player #{player.symbol}'?".red
+      choice = gets.chomp.to_i
+      if @board.space_free?(choice)
+        @board.place_symbol(choice, player.symbol)
+        @current_turn += 1
+        puts "Player #{player.symbol}'s move:".green 
       else
-        puts "Goodbye".cyan.bold
+        puts "Space unavailable! Please select another cell"
       end
     end
 
+    def print_game_result
+      if @board.winner
+        @current_turn += 1
+        puts "Player #{current_player.symbol} wins!"
+        puts "Game over"
+      else
+        puts "It's a Draw!".cyan 
+      end
+    end
+     
+    def current_player
+      @current_turn.even? ? @player2 : @player1
+    end
   end
-
 end
 
-TicTacToe::Game.new
+def play_again?
+  puts "Play again? (yes or no)".yellow
+  answer = gets.chomp.downcase
+  return answer == "yes"
+end
+
+loop do 
+  TicTacToe::Game.new.play_game
+  unless  play_again?
+    puts "Goodbye".cyan.bold
+    break
+  end
+end
+   
+
