@@ -59,13 +59,13 @@ module TicTacToe
   class Game 
     def initialize
       @board = Board.new
+      @player1 = Player.new("X")
+      @player2 = Player.new("O")
+      @current_turn = 1
     end
 
     def play_game
-      @player1 = Player.new("X")
-      @player2 = Player.new("O")
       puts @board
-      @current_turn = 1
       while !@board.winner && !@board.tie?
         move(current_player)
         puts @board
